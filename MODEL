@@ -1,0 +1,37 @@
+import networkx as nx
+
+from database.DAO import DAO
+
+
+class Model:
+    def __init__(self):
+        self._grafo = nx.Graph()
+
+    def creaGrafo(self):
+        # Aggiungi i nodi al grafo
+        self._nodes = DAO.getObject()  # Ottieni i nodi
+        node_ids = {obj.object_id for obj in self._nodes}  # Usa un set per velocità
+        self._grafo.add_nodes_from(node_ids)  # Aggiungi i nodi al grafo
+
+        # Ottieni gli archi
+        edges = DAO.getEdegs()  # Restituisce (o1, o2, peso)
+
+        # Aggiungi gli archi al grafo
+        for o1, o2, peso in edges:
+            # Aggiungi direttamente l'arco (assumendo che edges sia già filtrato)
+                # Somma i pesi degli archi duplicati
+                if self._grafo.has_edge(o1, o2):
+                    self._grafo[o1][o2]['weight'] += peso
+                else:
+                    self._grafo.add_edge(o1, o2, weight=peso)
+
+    def getConnessa(self, v0):
+        if v0 in self._grafo:  # Trova la componente connessa contenente il vertice selezionato
+            connected_component = nx.node_connected_component(self._grafo, v0) # Stampa il numero di vertici nella componente connessa
+            num_vertices = len(connected_component)
+            return num_vertices
+        else:
+            return None
+
+    def getDetails(self):
+        return self._grafo.number_of_nodes(), self._grafo.number_of_edges()
